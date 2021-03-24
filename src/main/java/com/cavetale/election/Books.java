@@ -23,7 +23,9 @@ public final class Books {
         //
         for (SQLChoice choice : election.choices) {
             ComponentBuilder cb = new ComponentBuilder();
+            cb.append(choice.getName()).color(ChatColor.DARK_BLUE);
             if (choice.getDescription() != null) {
+                cb.append("\n").reset();
                 cb.append(choice.getDescription());
             }
             if (choice.getUrl() != null) {
