@@ -85,13 +85,17 @@ public final class ElectionAdminCommand implements TabExecutor {
         for (SQLChoice row : election.choices) {
             sender.sendMessage(Component.text("- " + row.toString()).color(NamedTextColor.AQUA));
         }
-        sender.sendMessage(Component.text("Ballots: " + election.ballots.size()).color(NamedTextColor.AQUA));
-        for (SQLBallot row : election.ballots) {
-            sender.sendMessage(Component.text("- " + row.toString()).color(NamedTextColor.AQUA));
+        if (election.ballots != null) {
+            sender.sendMessage(Component.text("Ballots: " + election.ballots.size()).color(NamedTextColor.AQUA));
+            for (SQLBallot row : election.ballots) {
+                sender.sendMessage(Component.text("- " + row.toString()).color(NamedTextColor.AQUA));
+            }
         }
-        sender.sendMessage(Component.text("Votes: " + election.ballots.size()).color(NamedTextColor.AQUA));
-        for (SQLVote row : election.votes) {
-            sender.sendMessage(Component.text("- " + row.toString()).color(NamedTextColor.AQUA));
+        if (election.votes != null) {
+            sender.sendMessage(Component.text("Votes: " + election.ballots.size()).color(NamedTextColor.AQUA));
+            for (SQLVote row : election.votes) {
+                sender.sendMessage(Component.text("- " + row.toString()).color(NamedTextColor.AQUA));
+            }
         }
         return true;
     }
