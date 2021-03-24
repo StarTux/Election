@@ -2,10 +2,8 @@ package com.cavetale.election;
 
 import com.cavetale.core.command.CommandNode;
 import com.cavetale.core.command.CommandWarn;
-import com.cavetale.election.sql.SQLBallot;
 import com.cavetale.election.sql.SQLChoice;
 import com.cavetale.election.sql.SQLElection;
-import com.cavetale.election.sql.SQLVote;
 import com.cavetale.election.struct.Position;
 import com.cavetale.election.util.Json;
 import java.util.Arrays;
@@ -84,18 +82,6 @@ public final class ElectionAdminCommand implements TabExecutor {
         sender.sendMessage(Component.text("Choices: " + election.choices.size()).color(NamedTextColor.AQUA));
         for (SQLChoice row : election.choices) {
             sender.sendMessage(Component.text("- " + row.toString()).color(NamedTextColor.AQUA));
-        }
-        if (election.ballots != null) {
-            sender.sendMessage(Component.text("Ballots: " + election.ballots.size()).color(NamedTextColor.AQUA));
-            for (SQLBallot row : election.ballots) {
-                sender.sendMessage(Component.text("- " + row.toString()).color(NamedTextColor.AQUA));
-            }
-        }
-        if (election.votes != null) {
-            sender.sendMessage(Component.text("Votes: " + election.votes.size()).color(NamedTextColor.AQUA));
-            for (SQLVote row : election.votes) {
-                sender.sendMessage(Component.text("- " + row.toString()).color(NamedTextColor.AQUA));
-            }
         }
         return true;
     }
