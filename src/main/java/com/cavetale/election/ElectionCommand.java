@@ -70,6 +70,10 @@ public final class ElectionCommand implements TabExecutor {
     }
 
     private void onCommand(Player player, Election election, String[] args) {
+        String permission = election.election.getPermission();
+        if (permission != null && !permission.isEmpty()) {
+            if (!player.hasPermission(permission)) return;
+        }
         if (args.length == 0) {
             player.openBook(Books.makeBook(election, player));
             return;
