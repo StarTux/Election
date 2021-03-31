@@ -16,7 +16,7 @@ public final class SQLChoice implements Comparable<SQLChoice> {
     private Integer id;
     @Column(nullable = false)
     private int electionId;
-    @Column(nullable = false, length = 255, unique = true)
+    @Column(nullable = false, length = 255)
     private String name;
     @Column(nullable = true)
     private int priority;
