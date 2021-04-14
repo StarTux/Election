@@ -6,6 +6,8 @@ import com.cavetale.election.sql.SQLVote;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
+import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -53,10 +55,13 @@ public final class Books {
             case PICK_ONE: {
                 SQLBallot ballot = election.findBallot(player.getUniqueId());
                 boolean elected = ballot != null && ballot.getChoiceId() == choice.getId();
-                cb.append("[Vote]");
                 if (elected) {
-                    cb.color(ChatColor.GOLD).bold(true);
+                    cb.append("\u2610 [Vote]");
+                    cb.color(ChatColor.DARK_BLUE).bold(true);
+                    cb.event(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+                                            TextComponent.fromLegacyText(ChatColor.GOLD + "Click here to vote")));
                 } else {
+                    cb.append("\u2612 Voted");
                     cb.color(ChatColor.DARK_GREEN);
                     String cmd =  "/elect " + election.election.getName() + " vote " + choice.getName();
                     cb.event(new ClickEvent(ClickEvent.Action.RUN_COMMAND, cmd));
