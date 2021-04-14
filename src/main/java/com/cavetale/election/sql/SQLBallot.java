@@ -29,8 +29,9 @@ public final class SQLBallot {
 
     public SQLBallot() { }
 
-    public SQLBallot(final UUID uuid, final SQLElection election, final SQLChoice choice) {
+    public SQLBallot(final UUID uuid, final String userName, final SQLElection election, final SQLChoice choice) {
         this.user = uuid;
+        this.userName = userName;
         this.electionId = election.getId();
         this.choiceId = choice.getId();
     }

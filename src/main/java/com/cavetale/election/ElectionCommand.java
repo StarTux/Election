@@ -90,7 +90,7 @@ public final class ElectionCommand implements TabExecutor {
                 ballot.setChoiceId(choice.getId());
                 plugin.database.updateAsync(ballot, count -> voteCallback(player, count, election), "choice_id");
             } else {
-                ballot = new SQLBallot(player.getUniqueId(), election.election, choice);
+                ballot = new SQLBallot(player.getUniqueId(), player.getName(), election.election, choice);
                 plugin.database.insertIgnoreAsync(ballot, count -> voteCallback(player, count, election));
             }
             break;
