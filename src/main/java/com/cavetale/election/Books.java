@@ -56,13 +56,11 @@ public final class Books {
                 SQLBallot ballot = election.findBallot(player.getUniqueId());
                 boolean elected = ballot != null && ballot.getChoiceId() == choice.getId();
                 if (elected) {
-                    cb.append("\u2610 [Vote]");
-                    cb.color(ChatColor.DARK_BLUE).bold(true);
+                    cb.append("\u2612 Voted").color(ChatColor.GOLD).bold(true);
+                } else {
+                    cb.append("\u2610 [Vote]").color(ChatColor.DARK_BLUE);
                     cb.event(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
                                             TextComponent.fromLegacyText(ChatColor.GOLD + "Click here to vote")));
-                } else {
-                    cb.append("\u2612 Voted");
-                    cb.color(ChatColor.DARK_GREEN);
                     String cmd =  "/elect " + election.election.getName() + " vote " + choice.getName();
                     cb.event(new ClickEvent(ClickEvent.Action.RUN_COMMAND, cmd));
                 }
