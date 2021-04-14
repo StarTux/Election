@@ -21,8 +21,15 @@ public final class Books {
         meta.setAuthor("Cavetale");
         meta.setGeneration(BookMeta.Generation.ORIGINAL);
         //
+        ComponentBuilder cb = new ComponentBuilder();
+        cb.append(election.election.getName()).color(ChatColor.DARK_BLUE);
+        if (election.election.getDescription() != null) {
+            cb.append("\n\n").reset();
+            cb.append(election.election.getDescription());
+        }
+        meta.spigot().addPage(cb.create());
         for (SQLChoice choice : election.choices) {
-            ComponentBuilder cb = new ComponentBuilder();
+            cb = new ComponentBuilder();
             cb.append(choice.getName()).color(ChatColor.DARK_BLUE);
             if (choice.getDescription() != null) {
                 cb.append("\n").reset();
