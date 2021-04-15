@@ -113,9 +113,10 @@ public final class ElectionCommand implements TabExecutor {
             if (vote != null) {
                 if (vote.getValue() == newValue) return;
                 vote.setValue(newValue);
-                plugin.database.updateAsync(vote, count -> voteCallback(player, count, election), "value");
+                vote.setUserName(player.getName());
+                plugin.database.updateAsync(vote, count -> voteCallback(player, count, election), "value", "user_name");
             } else {
-                vote = new SQLVote(player.getUniqueId(), election.election, choice, newValue);
+                vote = new SQLVote(player.getUniqueId(), player.getName(), election.election, choice, newValue);
                 plugin.database.insertIgnoreAsync(vote, count -> voteCallback(player, count, election));
             }
             break;

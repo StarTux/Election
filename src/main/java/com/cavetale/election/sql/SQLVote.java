@@ -31,8 +31,9 @@ public final class SQLVote {
 
     public SQLVote() { }
 
-    public SQLVote(final UUID uuid, final SQLElection election, final SQLChoice choice, final int value) {
+    public SQLVote(final UUID uuid, final String userName, final SQLElection election, final SQLChoice choice, final int value) {
         this.user = uuid;
+        this.userName = userName;
         this.electionId = election.getId();
         this.choiceId = choice.getId();
         this.value = value;

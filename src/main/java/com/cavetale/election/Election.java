@@ -5,7 +5,9 @@ import com.cavetale.election.sql.SQLBallot;
 import com.cavetale.election.sql.SQLChoice;
 import com.cavetale.election.sql.SQLElection;
 import com.cavetale.election.sql.SQLVote;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -60,6 +62,13 @@ public final class Election {
         return election;
     }
 
+    public SQLChoice findChoice(int choiceId) {
+        for (SQLChoice choice : choices) {
+            if (choice.getId() == choiceId) return choice;
+        }
+        return null;
+    }
+
     public SQLChoice findChoice(String name) {
         for (SQLChoice choice : choices) {
             if (name.equals(choice.getName())) return choice;
@@ -90,5 +99,27 @@ public final class Election {
             }
         }
         return null;
+    }
+
+    public Map<String, Integer> getResults() {
+        Map<String, Integer> result = new HashMap<>();
+        switch (election.getType()) {
+        case PICK_ONE:
+            for (SQLBallot ballot : ballots) {
+                SQLChoice choice = findChoice(ballot.getChoiceId());
+                if (choice == null) throw new IllegalStateException("Invalid choice: " + ballot);
+                result.compute(choice.getName(), (n, i) -> (i != null ? i : 0) + 1);
+            }
+            return result;
+        case UP_DOWN_VOTE:
+            for (SQLVote vote : votes) {
+                SQLChoice choice = findChoice(vote.getChoiceId());
+                if (choice == null) throw new IllegalStateException("Invalid choice: " + vote);
+                result.compute(choice.getName(), (n, i) -> (i != null ? i : 0) + vote.getValue());
+            }
+            return result;
+        default:
+            return result;
+        }
     }
 }

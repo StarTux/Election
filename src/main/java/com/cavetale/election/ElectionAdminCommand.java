@@ -2,12 +2,18 @@ package com.cavetale.election;
 
 import com.cavetale.core.command.CommandNode;
 import com.cavetale.core.command.CommandWarn;
+import com.cavetale.election.sql.SQLBallot;
 import com.cavetale.election.sql.SQLChoice;
 import com.cavetale.election.sql.SQLElection;
+import com.cavetale.election.sql.SQLVote;
 import com.cavetale.election.struct.Position;
 import com.cavetale.election.util.Json;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -34,6 +40,8 @@ public final class ElectionAdminCommand implements TabExecutor {
         choiceNode.addChild("setprio").arguments("<election> <choice> <prio>").senderCaller(this::choiceSetprio);
         choiceNode.addChild("seturl").arguments("<election> <choice> <url>").senderCaller(this::choiceSeturl);
         choiceNode.addChild("setwarp").arguments("<election> <choice>").playerCaller(this::choiceSetwarp);
+        rootNode.addChild("results").arguments("<election>").senderCaller(this::results).description("View election results");
+        rootNode.addChild("breakdown").arguments("<election>").senderCaller(this::breakdown).description("View election breakdown");
         plugin.getCommand("electionadmin").setExecutor(this);
     }
 
@@ -52,7 +60,7 @@ public final class ElectionAdminCommand implements TabExecutor {
         List<SQLElection> list = plugin.database.find(SQLElection.class).findList();
         sender.sendMessage(Component.text(list.size() + " Elections:").color(NamedTextColor.AQUA));
         for (SQLElection row : list) {
-            sender.sendMessage(Component.text("- " + row.toString()).color(NamedTextColor.AQUA));
+            sender.sendMessage(Component.text("  " + row.getName()).color(NamedTextColor.AQUA));
         }
         return true;
     }
@@ -175,6 +183,86 @@ public final class ElectionAdminCommand implements TabExecutor {
             throw new CommandWarn("Could not update election!");
         }
         player.sendMessage(Component.text("Warp updated: " + choice.getWarpJson()).color(NamedTextColor.AQUA));
+        return true;
+    }
+
+    boolean results(CommandSender sender, String[] args) {
+        if (args.length != 1) return false;
+        Election election = Election.forCommand(args[0]);
+        election.fill();
+        Map<String, Integer> results = election.getResults();
+        if (results.isEmpty()) throw new CommandWarn("No results: " + election.election.getName());
+        sender.sendMessage(Component.text("Election results: " + election.election.getName()).color(NamedTextColor.AQUA));
+        List<String> names = new ArrayList<>(results.keySet());
+        Collections.sort(names, (b, a) -> Integer.compare(results.get(a), results.get(b)));
+        int maxLength = 0;
+        Map<String, String> display = new HashMap<>();
+        for (Map.Entry<String, Integer> entry : results.entrySet()) {
+            String value = entry.getValue().toString();
+            if (value.length() > maxLength) maxLength = value.length();
+            display.put(entry.getKey(), value);
+        }
+        for (String name : names) {
+            StringBuilder sb = new StringBuilder();
+            String score = display.get(name);
+            int count = maxLength - score.length();
+            if (count > 0) {
+                for (int i = 0; i < count; i += 1) {
+                    sb.append(' ');
+                }
+                sb.append(score);
+                score = sb.toString();
+            }
+            sender.sendMessage(Component.empty()
+                               .append(Component.text("  "))
+                               .append(Component.text(score).color(NamedTextColor.YELLOW))
+                               .append(Component.text(" "))
+                               .append(Component.text(name).color(NamedTextColor.AQUA)));
+        }
+        return true;
+    }
+
+    boolean breakdown(CommandSender sender, String[] args) {
+        if (args.length != 1) return false;
+        Election election = Election.forCommand(args[0]);
+        election.fill();
+        if (election.ballots != null) {
+            sender.sendMessage(Component.text(election.ballots.size() + " ballots").color(NamedTextColor.AQUA));
+            for (SQLBallot ballot : election.ballots) {
+                SQLChoice choice = election.findChoice(ballot.getChoiceId());
+                if (choice == null) throw new IllegalStateException("Invalid choice: " + ballot);
+                String userName = ballot.getUserName();
+                if (userName == null) userName = "?";
+                sender.sendMessage(Component.empty()
+                                   .append(Component.text("  "))
+                                   .append(Component.text(userName)).color(NamedTextColor.AQUA)
+                                   .append(Component.text(" "))
+                                   .append(Component.text(choice.getName()).color(NamedTextColor.YELLOW)));
+            }
+        }
+        if (election.votes != null) {
+            sender.sendMessage(Component.text(election.votes.size() + " votes").color(NamedTextColor.AQUA));
+            for (SQLVote vote : election.votes) {
+                SQLChoice choice = election.findChoice(vote.getChoiceId());
+                if (choice == null) throw new IllegalStateException("Invalid choice: " + vote);
+                Component value;
+                switch (vote.getValue()) {
+                case 1: value = Component.text("+").color(NamedTextColor.GREEN); break;
+                case -1: value = Component.text("-").color(NamedTextColor.RED); break;
+                case 0: value = Component.text("o").color(NamedTextColor.GRAY); break;
+                default: value = Component.text(vote.getValue()).color(NamedTextColor.DARK_RED); break;
+                }
+                String userName = vote.getUserName();
+                if (userName == null) userName = "?";
+                sender.sendMessage(Component.empty()
+                                   .append(Component.text("  "))
+                                   .append(value)
+                                   .append(Component.text(" "))
+                                   .append(Component.text(userName).color(NamedTextColor.AQUA))
+                                   .append(Component.text(" "))
+                                   .append(Component.text(choice.getName()).color(NamedTextColor.AQUA)));
+            }
+        }
         return true;
     }
 }
