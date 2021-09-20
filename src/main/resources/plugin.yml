@@ -3,7 +3,7 @@ main: com.cavetale.election.ElectionPlugin
 name: Election
 version: 0.1
 description: Election Plugin
-api-version: 1.13
+api-version: 1.17
 
 author: StarTux
 website: https://github.com/StarTux/Election
