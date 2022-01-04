@@ -147,7 +147,7 @@ public final class ElectionAdminCommand implements TabExecutor {
         SQLChoice choice = election.choiceForCommand(args[1]);
         int prio;
         try {
-            prio = Integer.parseInt(args[1]);
+            prio = Integer.parseInt(args[2]);
         } catch (NumberFormatException nfe) {
             throw new CommandWarn("Number expected: " + args[2]);
         }

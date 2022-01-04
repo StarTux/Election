@@ -39,12 +39,13 @@ public final class ElectionCommand implements TabExecutor {
         Player player = (Player) sender;
         if (args.length == 0) {
             plugin.database.find(SQLElection.class).findListAsync(list -> {
+                    list.removeIf(row -> row.getPermission() != null
+                                  && !row.getPermission().isEmpty()
+                                  && !player.hasPermission(row.getPermission()));
+                    if (list.isEmpty()) {
+                        player.sendMessage(Component.text("No elections available!", NamedTextColor.RED));
+                    }
                     for (SQLElection row : list) {
-                        if (row.getPermission() != null
-                            && !row.getPermission().isEmpty()
-                            && !player.hasPermission(row.getPermission())) {
-                            continue;
-                        }
                         String cmd = "/elect " + row.getName();
                         player.sendMessage(Component.text(row.getName()).color(NamedTextColor.AQUA).clickEvent(ClickEvent.runCommand(cmd)));
                     }

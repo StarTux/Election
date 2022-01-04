@@ -5,6 +5,7 @@ import com.cavetale.election.sql.SQLBallot;
 import com.cavetale.election.sql.SQLChoice;
 import com.cavetale.election.sql.SQLElection;
 import com.cavetale.election.sql.SQLVote;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +34,7 @@ public final class Election {
         choices = ElectionPlugin.instance.database.find(SQLChoice.class)
             .eq("election_id", election.getId())
             .findList();
+        Collections.sort(choices);
         switch (election.getType()) {
         case PICK_ONE:
             ballots = ElectionPlugin.instance.database.find(SQLBallot.class)
