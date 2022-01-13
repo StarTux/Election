@@ -12,6 +12,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
@@ -47,7 +48,9 @@ public final class ElectionCommand implements TabExecutor {
                     }
                     for (SQLElection row : list) {
                         String cmd = "/elect " + row.getName();
-                        player.sendMessage(Component.text(row.getName()).color(NamedTextColor.AQUA).clickEvent(ClickEvent.runCommand(cmd)));
+                        player.sendMessage(Component.text(row.getName()).color(NamedTextColor.AQUA)
+                                           .clickEvent(ClickEvent.runCommand(cmd))
+                                           .hoverEvent(HoverEvent.showText(Component.text(cmd, NamedTextColor.AQUA))));
                     }
                 });
             return true;

@@ -1,5 +1,6 @@
 package com.cavetale.election;
 
+import com.cavetale.core.command.CommandArgCompleter;
 import com.cavetale.core.command.CommandNode;
 import com.cavetale.core.command.CommandWarn;
 import com.cavetale.election.sql.SQLBallot;
@@ -29,19 +30,56 @@ public final class ElectionAdminCommand implements TabExecutor {
 
     public void enable() {
         rootNode = new CommandNode("electionadmin");
-        rootNode.addChild("list").denyTabCompletion().senderCaller(this::list);
-        rootNode.addChild("create").arguments("<name> <type>").senderCaller(this::create);
-        rootNode.addChild("info").arguments("<name>").senderCaller(this::info);
-        rootNode.addChild("setdesc").arguments("<name> <desc...>").senderCaller(this::setdesc);
-        rootNode.addChild("setperm").arguments("<name> <permission>").senderCaller(this::setperm);
+        rootNode.addChild("list").denyTabCompletion()
+            .senderCaller(this::list);
+        rootNode.addChild("create").arguments("<name> <type>")
+            .completers(CommandArgCompleter.supplyList(this::listNames),
+                        CommandArgCompleter.enumLowerList(ElectionType.class))
+            .senderCaller(this::create);
+        rootNode.addChild("info").arguments("<name>")
+            .completers(CommandArgCompleter.supplyList(this::listNames))
+            .senderCaller(this::info);
+        rootNode.addChild("setdesc").arguments("<name> <desc...>")
+            .completers(CommandArgCompleter.supplyList(this::listNames),
+                        CommandArgCompleter.EMPTY,
+                        CommandArgCompleter.REPEAT)
+            .senderCaller(this::setdesc);
+        rootNode.addChild("setperm").arguments("<name> <permission>")
+            .completers(CommandArgCompleter.supplyList(this::listNames),
+                        CommandArgCompleter.EMPTY)
+            .senderCaller(this::setperm);
         CommandNode choiceNode = rootNode.addChild("choice").description("Choice subcommand");
-        choiceNode.addChild("create").arguments("<election> <name>").senderCaller(this::choiceCreate);
-        choiceNode.addChild("setdesc").arguments("<election> <choice> <desc...>").senderCaller(this::choiceSetdesc);
-        choiceNode.addChild("setprio").arguments("<election> <choice> <prio>").senderCaller(this::choiceSetprio);
-        choiceNode.addChild("seturl").arguments("<election> <choice> <url>").senderCaller(this::choiceSeturl);
-        choiceNode.addChild("setwarp").arguments("<election> <choice>").playerCaller(this::choiceSetwarp);
-        rootNode.addChild("results").arguments("<election>").senderCaller(this::results).description("View election results");
-        rootNode.addChild("breakdown").arguments("<election>").senderCaller(this::breakdown).description("View election breakdown");
+        choiceNode.addChild("create").arguments("<election> <name>")
+            .completers(CommandArgCompleter.supplyList(this::listNames),
+                        CommandArgCompleter.EMPTY)
+            .senderCaller(this::choiceCreate);
+        choiceNode.addChild("setdesc").arguments("<election> <choice> <desc...>")
+            .completers(CommandArgCompleter.supplyList(this::listNames),
+                        CommandArgCompleter.supplyList(this::listChoiceNames),
+                        CommandArgCompleter.EMPTY)
+            .senderCaller(this::choiceSetdesc);
+        choiceNode.addChild("setprio").arguments("<election> <choice> <prio>")
+            .completers(CommandArgCompleter.supplyList(this::listNames),
+                        CommandArgCompleter.supplyList(this::listChoiceNames),
+                        CommandArgCompleter.integer(i -> true))
+            .senderCaller(this::choiceSetprio);
+        choiceNode.addChild("seturl").arguments("<election> <choice> <url>")
+            .completers(CommandArgCompleter.supplyList(this::listNames),
+                        CommandArgCompleter.supplyList(this::listChoiceNames),
+                        CommandArgCompleter.EMPTY)
+            .senderCaller(this::choiceSeturl);
+        choiceNode.addChild("setwarp").arguments("<election> <choice>")
+            .completers(CommandArgCompleter.supplyList(this::listNames),
+                        CommandArgCompleter.supplyList(this::listChoiceNames))
+            .playerCaller(this::choiceSetwarp);
+        rootNode.addChild("results").arguments("<election>")
+            .completers(CommandArgCompleter.supplyList(this::listNames))
+            .description("View election results")
+            .senderCaller(this::results);
+        rootNode.addChild("breakdown").arguments("<election>")
+            .completers(CommandArgCompleter.supplyList(this::listNames))
+            .description("View election breakdown")
+            .senderCaller(this::breakdown);
         plugin.getCommand("electionadmin").setExecutor(this);
     }
 
@@ -53,6 +91,29 @@ public final class ElectionAdminCommand implements TabExecutor {
     @Override
     public List<String> onTabComplete(final CommandSender sender, final Command command, final String alias, final String[] args) {
         return rootNode.complete(sender, command, alias, args);
+    }
+
+    // Bug: This blocks the main thread!
+    private List<String> listNames() {
+        List<SQLElection> list = plugin.database.find(SQLElection.class).findList();
+        List<String> result = new ArrayList<>();
+        for (SQLElection row : list) {
+            result.add(row.getName());
+        }
+        return result;
+    }
+
+    // Bug: This blocks the main thread!
+    // Bug: This lists all choices!
+    private List<String> listChoiceNames() {
+        List<SQLChoice> list = plugin.database.find(SQLChoice.class).findList();
+        List<String> result = new ArrayList<>();
+        for (SQLChoice row : list) {
+            if (!result.contains(row.getName())) {
+                result.add(row.getName());
+            }
+        }
+        return result;
     }
 
     boolean list(CommandSender sender, String[] args) {
