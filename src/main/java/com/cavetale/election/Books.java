@@ -22,7 +22,7 @@ public final class Books {
     public static ItemStack makeBook(Election election, Player player) {
         List<Component> pages = new ArrayList<>();
         TextComponent.Builder frontPage = Component.text();
-        frontPage.append(Component.text(election.election.getName(), NamedTextColor.DARK_BLUE));
+        frontPage.append(election.election.getDisplayNameComponent());
         if (election.election.getDescription() != null) {
             frontPage.append(Component.newline());
             frontPage.append(Component.newline());
@@ -116,5 +116,21 @@ public final class Books {
             throw new IllegalStateException("electionType=" + election.election.getType());
         }
         return cb.build();
+    }
+
+    public static ItemStack make(List<Component> pages) {
+        ItemStack book = new ItemStack(Material.WRITTEN_BOOK);
+        book.editMeta(m -> {
+                if (m instanceof BookMeta meta) {
+                    meta.setAuthor("Cavetale");
+                    meta.title(Component.empty());
+                    meta.pages(pages);
+                }
+            });
+        return book;
+    }
+
+    public static void open(Player player, List<Component> pages) {
+        player.openBook(make(pages));
     }
 }

@@ -18,6 +18,7 @@ import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
@@ -48,6 +49,11 @@ public final class ElectionAdminCommand implements TabExecutor {
             .completers(CommandArgCompleter.supplyList(this::listNames),
                         CommandArgCompleter.EMPTY)
             .senderCaller(this::setperm);
+        rootNode.addChild("displayname").arguments("<name> <component>")
+            .description("Set the display name components")
+            .completers(CommandArgCompleter.supplyList(this::listNames),
+                        CommandArgCompleter.EMPTY)
+            .senderCaller(this::displayName);
         CommandNode choiceNode = rootNode.addChild("choice").description("Choice subcommand");
         choiceNode.addChild("create").arguments("<election> <name>")
             .completers(CommandArgCompleter.supplyList(this::listNames),
@@ -174,6 +180,23 @@ public final class ElectionAdminCommand implements TabExecutor {
             throw new CommandWarn("Could not update election!");
         }
         sender.sendMessage(Component.text("Permission updated " + election.election.getPermission()).color(NamedTextColor.AQUA));
+        return true;
+    }
+
+    protected boolean displayName(CommandSender sender, String[] args) {
+        if (args.length < 2) return false;
+        Election election = Election.forCommand(args[0]);
+        String json = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
+        try {
+            election.election.setDisplayNameComponent(GsonComponentSerializer.gson().deserialize(json));
+        } catch (Exception e) {
+            throw new CommandWarn("Invalid component: " + json);
+        }
+        if (0 == plugin.database.update(election.election, "displayName")) {
+            throw new CommandWarn("Could not update election!");
+        }
+        sender.sendMessage(Component.text("Display name updated: ", NamedTextColor.AQUA)
+                           .append(election.election.getDisplayNameComponent()));
         return true;
     }
 

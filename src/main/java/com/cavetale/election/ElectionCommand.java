@@ -6,6 +6,7 @@ import com.cavetale.election.sql.SQLElection;
 import com.cavetale.election.sql.SQLVote;
 import com.cavetale.election.struct.Position;
 import com.cavetale.election.util.Json;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -13,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.SoundCategory;
@@ -22,6 +22,12 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
+import static net.kyori.adventure.text.Component.join;
+import static net.kyori.adventure.text.Component.newline;
+import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.JoinConfiguration.separator;
+import static net.kyori.adventure.text.format.NamedTextColor.*;
+import static net.kyori.adventure.text.format.TextDecoration.*;
 
 @RequiredArgsConstructor
 public final class ElectionCommand implements TabExecutor {
@@ -44,14 +50,19 @@ public final class ElectionCommand implements TabExecutor {
                                   && !row.getPermission().isEmpty()
                                   && !player.hasPermission(row.getPermission()));
                     if (list.isEmpty()) {
-                        player.sendMessage(Component.text("No elections available!", NamedTextColor.RED));
+                        player.sendMessage(text("No elections available!", RED));
                     }
+                    List<Component> lines = new ArrayList<>();
+                    lines.add(text("Elections", DARK_BLUE, BOLD));
+                    lines.add(newline());
                     for (SQLElection row : list) {
                         String cmd = "/elect " + row.getName();
-                        player.sendMessage(Component.text(row.getName()).color(NamedTextColor.AQUA)
-                                           .clickEvent(ClickEvent.runCommand(cmd))
-                                           .hoverEvent(HoverEvent.showText(Component.text(cmd, NamedTextColor.AQUA))));
+                        Component displayName = row.getDisplayNameComponent();
+                        lines.add(displayName
+                                  .clickEvent(ClickEvent.runCommand(cmd))
+                                  .hoverEvent(HoverEvent.showText(displayName)));
                     }
+                    Books.open(player, List.of(join(separator(newline()), lines)));
                 });
             return true;
         }
@@ -133,7 +144,7 @@ public final class ElectionCommand implements TabExecutor {
             Position position = Json.deserialize(choice.getWarpJson(), Position.class);
             if (position == null) return;
             player.teleport(position.toLocation(), TeleportCause.PLUGIN);
-            player.sendMessage(Component.text("Warping to site").color(NamedTextColor.GREEN));
+            player.sendMessage(text("Warping to site").color(GREEN));
             break;
         }
         default: break;
@@ -142,10 +153,10 @@ public final class ElectionCommand implements TabExecutor {
 
     private void voteCallback(Player player, int count, Election election) {
         if (count == 0) {
-            player.sendMessage(Component.text("Vote failed!").color(NamedTextColor.RED));
+            player.sendMessage(text("Vote failed!").color(RED));
         } else {
             player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, SoundCategory.MASTER, 1.0f, 1.0f);
-            player.sendMessage(Component.text("Vote succeeded!").color(NamedTextColor.GREEN));
+            player.sendMessage(text("Vote succeeded!").color(GREEN));
             openBook(player, election.election.getName());
         }
     }
