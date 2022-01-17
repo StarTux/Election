@@ -272,6 +272,9 @@ public final class ElectionAdminCommand implements TabExecutor {
 
     boolean results(CommandSender sender, String[] args) {
         if (args.length != 1) return false;
+        if (sender instanceof Player && (!sender.isPermissionSet("election.peek") || !sender.hasPermission("election.peek"))) {
+            throw new CommandWarn("You shall not peek!");
+        }
         Election election = Election.forCommand(args[0]);
         election.fill();
         Map<String, Integer> results = election.getResults();
@@ -308,6 +311,9 @@ public final class ElectionAdminCommand implements TabExecutor {
 
     boolean breakdown(CommandSender sender, String[] args) {
         if (args.length != 1) return false;
+        if (sender instanceof Player && (!sender.isPermissionSet("election.peek") || !sender.hasPermission("election.peek"))) {
+            throw new CommandWarn("You shall not peek!");
+        }
         Election election = Election.forCommand(args[0]);
         election.fill();
         if (election.ballots != null) {

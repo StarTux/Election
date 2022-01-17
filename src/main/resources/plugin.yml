@@ -41,3 +41,7 @@ permissions:
   election.admin:
     description: Use /electionadmin
     default: op
+
+  election.peek:
+    description: View results
+    default: false
