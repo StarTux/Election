@@ -7,26 +7,31 @@ import java.util.ArrayList;
 import java.util.List;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
-import net.kyori.adventure.text.event.ClickEvent;
-import net.kyori.adventure.text.event.HoverEvent;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
+import static net.kyori.adventure.text.Component.join;
+import static net.kyori.adventure.text.Component.space;
+import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.JoinConfiguration.separator;
+import static net.kyori.adventure.text.event.ClickEvent.openUrl;
+import static net.kyori.adventure.text.event.ClickEvent.runCommand;
+import static net.kyori.adventure.text.event.HoverEvent.showText;
+import static net.kyori.adventure.text.format.NamedTextColor.*;
+import static net.kyori.adventure.text.format.TextDecoration.*;
 
 public final class Books {
     private Books() { }
 
     public static ItemStack makeBook(Election election, Player player) {
         List<Component> pages = new ArrayList<>();
-        TextComponent.Builder frontPage = Component.text();
+        TextComponent.Builder frontPage = text();
         frontPage.append(election.election.getDisplayNameComponent());
         if (election.election.getDescription() != null) {
             frontPage.append(Component.newline());
             frontPage.append(Component.newline());
-            frontPage.append(Component.text(election.election.getDescription()));
+            frontPage.append(text(election.election.getDescription()));
         }
         pages.add(frontPage.build());
         for (SQLChoice choice : election.choices) {
@@ -44,28 +49,36 @@ public final class Books {
     }
 
     public static Component makeChoicePage(Election election, SQLChoice choice, Player player) {
-        TextComponent.Builder cb = Component.text();
-        cb.append(Component.text(choice.getName(), NamedTextColor.DARK_BLUE));
+        TextComponent.Builder cb = text();
+        if (election.election.isShowVotes()) {
+            int votes = election.getResults().getOrDefault(choice.getName(), 0);
+            String votesString = votes == 1 ? "1 vote" : votes + " votes";
+            cb.append(join(separator(space()),
+                           text(choice.getName(), DARK_BLUE),
+                           text("(" + votesString + ")", BLUE, ITALIC)));
+        } else {
+            cb.append(text(choice.getName(), DARK_BLUE));
+        }
         if (choice.getDescription() != null) {
             cb.append(Component.newline());
-            cb.append(Component.text(choice.getDescription()));
+            cb.append(text(choice.getDescription()));
         }
         if (choice.getUrl() != null) {
             cb.append(Component.newline());
             cb.append(Component.newline());
-            cb.append(Component.text("Link: "));
-            cb.append(Component.text("Click here", NamedTextColor.DARK_BLUE, TextDecoration.UNDERLINED)
-                      .clickEvent(ClickEvent.openUrl(choice.getUrl()))
-                      .hoverEvent(HoverEvent.showText(Component.text(choice.getUrl(), NamedTextColor.BLUE))));
+            cb.append(text("Link: "));
+            cb.append(text("Click here", DARK_BLUE, UNDERLINED)
+                      .clickEvent(openUrl(choice.getUrl()))
+                      .hoverEvent(showText(text(choice.getUrl(), BLUE))));
         }
         if (choice.getWarpJson() != null) {
             cb.append(Component.newline());
             cb.append(Component.newline());
-            cb.append(Component.text("Warp: "));
+            cb.append(text("Warp: "));
             String cmd =  "/elect " + election.election.getName() + " warp " + choice.getName();
-            cb.append(Component.text("[Click Here]", NamedTextColor.DARK_GREEN)
-                      .clickEvent(ClickEvent.runCommand(cmd))
-                      .hoverEvent(HoverEvent.showText(Component.text("Warp to " + choice.getName()))));
+            cb.append(text("[Click Here]", DARK_GREEN)
+                      .clickEvent(runCommand(cmd))
+                      .hoverEvent(showText(text("Warp to " + choice.getName()))));
         }
         cb.append(Component.newline());
         cb.append(Component.newline());
@@ -74,12 +87,12 @@ public final class Books {
             SQLBallot ballot = election.findBallot(player.getUniqueId());
             boolean elected = ballot != null && ballot.getChoiceId() == choice.getId();
             if (elected) {
-                cb.append(Component.text("\u2612 Voted", NamedTextColor.GOLD, TextDecoration.BOLD));
+                cb.append(text("\u2612 Voted", GOLD, BOLD));
             } else {
                 String cmd =  "/elect " + election.election.getName() + " vote " + choice.getName();
-                cb.append(Component.text("\u2610 [Vote]", NamedTextColor.DARK_BLUE)
-                          .hoverEvent(HoverEvent.showText(Component.text("Click here to vote", NamedTextColor.GOLD)))
-                          .clickEvent(ClickEvent.runCommand(cmd)));
+                cb.append(text("\u2610 [Vote]", DARK_BLUE)
+                          .hoverEvent(showText(text("Click here to vote", GOLD)))
+                          .clickEvent(runCommand(cmd)));
             }
             break;
         }
@@ -88,27 +101,27 @@ public final class Books {
             int value = vote != null ? vote.getValue() : 0;
             if (value == 1) {
                 String cmd = "/elect " + election.election.getName() + " none " + choice.getName();
-                cb.append(Component.text("[Upvote]", NamedTextColor.GOLD, TextDecoration.BOLD)
-                          .hoverEvent(HoverEvent.showText(Component.text("Changed your mind?", NamedTextColor.GRAY)))
-                          .clickEvent(ClickEvent.runCommand(cmd)));
+                cb.append(text("[Upvote]", GOLD, BOLD)
+                          .hoverEvent(showText(text("Changed your mind?", GRAY)))
+                          .clickEvent(runCommand(cmd)));
             } else {
-                cb.color(NamedTextColor.DARK_GREEN);
+                cb.color(DARK_GREEN);
                 String cmd =  "/elect " + election.election.getName() + " up " + choice.getName();
-                cb.append(Component.text("[Upvote]", NamedTextColor.DARK_GREEN)
-                          .hoverEvent(HoverEvent.showText(Component.text("Click here to vote YES", NamedTextColor.GOLD)))
-                          .clickEvent(ClickEvent.runCommand(cmd)));
+                cb.append(text("[Upvote]", DARK_GREEN)
+                          .hoverEvent(showText(text("Click here to vote YES", GOLD)))
+                          .clickEvent(runCommand(cmd)));
             }
             cb.append(Component.space());
             if (value == -1) {
                 String cmd =  "/elect " + election.election.getName() + " none " + choice.getName();
-                cb.append(Component.text("[Downvote]", NamedTextColor.GOLD, TextDecoration.BOLD)
-                          .hoverEvent(HoverEvent.showText(Component.text("Changed your mind?", NamedTextColor.GRAY)))
-                          .clickEvent(ClickEvent.runCommand(cmd)));
+                cb.append(text("[Downvote]", GOLD, BOLD)
+                          .hoverEvent(showText(text("Changed your mind?", GRAY)))
+                          .clickEvent(runCommand(cmd)));
             } else {
                 String cmd =  "/elect " + election.election.getName() + " down " + choice.getName();
-                cb.append(Component.text("[Downvote]", NamedTextColor.DARK_GREEN)
-                          .hoverEvent(HoverEvent.showText(Component.text("Click here to vote NO", NamedTextColor.RED)))
-                          .clickEvent(ClickEvent.runCommand(cmd)));
+                cb.append(text("[Downvote]", DARK_GREEN)
+                          .hoverEvent(showText(text("Click here to vote NO", RED)))
+                          .clickEvent(runCommand(cmd)));
             }
             break;
         }

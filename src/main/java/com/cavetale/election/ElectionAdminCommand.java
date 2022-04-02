@@ -17,12 +17,12 @@ import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
+import static net.kyori.adventure.text.format.NamedTextColor.*;
 
 @RequiredArgsConstructor
 public final class ElectionAdminCommand implements TabExecutor {
@@ -54,6 +54,16 @@ public final class ElectionAdminCommand implements TabExecutor {
             .completers(CommandArgCompleter.supplyList(this::listNames),
                         CommandArgCompleter.EMPTY)
             .senderCaller(this::displayName);
+        rootNode.addChild("enabled").arguments("<name> true|false")
+            .description("Enable or display an election")
+            .completers(CommandArgCompleter.supplyList(this::listNames),
+                        CommandArgCompleter.list("true", "false"))
+            .senderCaller(this::enabled);
+        rootNode.addChild("showVotes").arguments("<name> true|false")
+            .description("Show or hide votes")
+            .completers(CommandArgCompleter.supplyList(this::listNames),
+                        CommandArgCompleter.list("true", "false"))
+            .senderCaller(this::showVotes);
         CommandNode choiceNode = rootNode.addChild("choice").description("Choice subcommand");
         choiceNode.addChild("create").arguments("<election> <name>")
             .completers(CommandArgCompleter.supplyList(this::listNames),
@@ -125,9 +135,9 @@ public final class ElectionAdminCommand implements TabExecutor {
     boolean list(CommandSender sender, String[] args) {
         if (args.length != 0) return false;
         List<SQLElection> list = plugin.database.find(SQLElection.class).findList();
-        sender.sendMessage(Component.text(list.size() + " Elections:").color(NamedTextColor.AQUA));
+        sender.sendMessage(Component.text(list.size() + " Elections:").color(AQUA));
         for (SQLElection row : list) {
-            sender.sendMessage(Component.text("  " + row.getName()).color(NamedTextColor.AQUA));
+            sender.sendMessage(Component.text("  " + row.getName()).color(AQUA));
         }
         return true;
     }
@@ -145,7 +155,7 @@ public final class ElectionAdminCommand implements TabExecutor {
         if (0 == plugin.database.insertIgnore(row)) {
             throw new CommandWarn("Election already exists: " + name);
         }
-        sender.sendMessage(Component.text("Election created: " + name).color(NamedTextColor.AQUA));
+        sender.sendMessage(Component.text("Election created: " + name).color(AQUA));
         return true;
     }
 
@@ -153,10 +163,10 @@ public final class ElectionAdminCommand implements TabExecutor {
         if (args.length != 1) return false;
         Election election = Election.forCommand(args[0]);
         election.fill();
-        sender.sendMessage(Component.text(election.election.toString()).color(NamedTextColor.AQUA));
-        sender.sendMessage(Component.text("Choices: " + election.choices.size()).color(NamedTextColor.AQUA));
+        sender.sendMessage(Component.text(election.election.toString()).color(AQUA));
+        sender.sendMessage(Component.text("Choices: " + election.choices.size()).color(AQUA));
         for (SQLChoice row : election.choices) {
-            sender.sendMessage(Component.text("- " + row.toString()).color(NamedTextColor.AQUA));
+            sender.sendMessage(Component.text("- " + row.toString()).color(AQUA));
         }
         return true;
     }
@@ -168,7 +178,7 @@ public final class ElectionAdminCommand implements TabExecutor {
         if (0 == plugin.database.update(election.election, "description")) {
             throw new CommandWarn("Could not update election!");
         }
-        sender.sendMessage(Component.text("Description updated " + election.election.getDescription()).color(NamedTextColor.AQUA));
+        sender.sendMessage(Component.text("Description updated " + election.election.getDescription()).color(AQUA));
         return true;
     }
 
@@ -179,7 +189,7 @@ public final class ElectionAdminCommand implements TabExecutor {
         if (0 == plugin.database.update(election.election, "permission")) {
             throw new CommandWarn("Could not update election!");
         }
-        sender.sendMessage(Component.text("Permission updated " + election.election.getPermission()).color(NamedTextColor.AQUA));
+        sender.sendMessage(Component.text("Permission updated " + election.election.getPermission()).color(AQUA));
         return true;
     }
 
@@ -195,8 +205,42 @@ public final class ElectionAdminCommand implements TabExecutor {
         if (0 == plugin.database.update(election.election, "displayName")) {
             throw new CommandWarn("Could not update election!");
         }
-        sender.sendMessage(Component.text("Display name updated: ", NamedTextColor.AQUA)
+        sender.sendMessage(Component.text("Display name updated: ", AQUA)
                            .append(election.election.getDisplayNameComponent()));
+        return true;
+    }
+
+    private boolean enabled(CommandSender sender, String[] args) {
+        if (args.length < 2) return false;
+        boolean value;
+        try {
+            value = Boolean.parseBoolean(args[1]);
+        } catch (IllegalArgumentException iae) {
+            throw new CommandWarn("True or false expected: " + args[1]);
+        }
+        Election election = Election.forCommand(args[0]);
+        election.election.setEnabled(value);
+        if (0 == plugin.database.update(election.election, "displayName")) {
+            throw new CommandWarn("Could not update election!");
+        }
+        sender.sendMessage(Component.text("Enabled: " + value, value ? AQUA : RED));
+        return true;
+    }
+
+    private boolean showVotes(CommandSender sender, String[] args) {
+        if (args.length < 2) return false;
+        boolean value;
+        try {
+            value = Boolean.parseBoolean(args[1]);
+        } catch (IllegalArgumentException iae) {
+            throw new CommandWarn("True or false expected: " + args[1]);
+        }
+        Election election = Election.forCommand(args[0]);
+        election.election.setShowVotes(value);
+        if (0 == plugin.database.update(election.election, "displayName")) {
+            throw new CommandWarn("Could not update election!");
+        }
+        sender.sendMessage(Component.text("Show votes: " + value, value ? AQUA : RED));
         return true;
     }
 
@@ -207,7 +251,7 @@ public final class ElectionAdminCommand implements TabExecutor {
         if (0 == plugin.database.insertIgnore(choice)) {
             throw new CommandWarn("Choice already exists: " + choice.getName());
         }
-        sender.sendMessage(Component.text("Choice created: " + choice.getName()).color(NamedTextColor.AQUA));
+        sender.sendMessage(Component.text("Choice created: " + choice.getName()).color(AQUA));
         return true;
     }
 
@@ -220,7 +264,7 @@ public final class ElectionAdminCommand implements TabExecutor {
         if (0 == plugin.database.update(choice, "description")) {
             throw new CommandWarn("Could not update election!");
         }
-        sender.sendMessage(Component.text("Description updated: " + choice.getDescription()).color(NamedTextColor.AQUA));
+        sender.sendMessage(Component.text("Description updated: " + choice.getDescription()).color(AQUA));
         return true;
     }
 
@@ -239,7 +283,7 @@ public final class ElectionAdminCommand implements TabExecutor {
         if (0 == plugin.database.update(choice, "priority")) {
             throw new CommandWarn("Could not update choice!");
         }
-        sender.sendMessage(Component.text("Priority updated: " + choice.getPriority()).color(NamedTextColor.AQUA));
+        sender.sendMessage(Component.text("Priority updated: " + choice.getPriority()).color(AQUA));
         return true;
     }
 
@@ -252,7 +296,7 @@ public final class ElectionAdminCommand implements TabExecutor {
         if (0 == plugin.database.update(choice, "url")) {
             throw new CommandWarn("Could not update election!");
         }
-        sender.sendMessage(Component.text("URL updated: " + choice.getUrl()).color(NamedTextColor.AQUA));
+        sender.sendMessage(Component.text("URL updated: " + choice.getUrl()).color(AQUA));
         return true;
     }
 
@@ -266,7 +310,7 @@ public final class ElectionAdminCommand implements TabExecutor {
         if (0 == plugin.database.update(choice, "warp_json")) {
             throw new CommandWarn("Could not update election!");
         }
-        player.sendMessage(Component.text("Warp updated: " + choice.getWarpJson()).color(NamedTextColor.AQUA));
+        player.sendMessage(Component.text("Warp updated: " + choice.getWarpJson()).color(AQUA));
         return true;
     }
 
@@ -279,7 +323,7 @@ public final class ElectionAdminCommand implements TabExecutor {
         election.fill();
         Map<String, Integer> results = election.getResults();
         if (results.isEmpty()) throw new CommandWarn("No results: " + election.election.getName());
-        sender.sendMessage(Component.text("Election results: " + election.election.getName()).color(NamedTextColor.AQUA));
+        sender.sendMessage(Component.text("Election results: " + election.election.getName()).color(AQUA));
         List<String> names = new ArrayList<>(results.keySet());
         Collections.sort(names, (b, a) -> Integer.compare(results.get(a), results.get(b)));
         int maxLength = 0;
@@ -302,9 +346,9 @@ public final class ElectionAdminCommand implements TabExecutor {
             }
             sender.sendMessage(Component.empty()
                                .append(Component.text("  "))
-                               .append(Component.text(score).color(NamedTextColor.YELLOW))
+                               .append(Component.text(score).color(YELLOW))
                                .append(Component.text(" "))
-                               .append(Component.text(name).color(NamedTextColor.AQUA)));
+                               .append(Component.text(name).color(AQUA)));
         }
         return true;
     }
@@ -317,7 +361,7 @@ public final class ElectionAdminCommand implements TabExecutor {
         Election election = Election.forCommand(args[0]);
         election.fill();
         if (election.ballots != null) {
-            sender.sendMessage(Component.text(election.ballots.size() + " ballots").color(NamedTextColor.AQUA));
+            sender.sendMessage(Component.text(election.ballots.size() + " ballots").color(AQUA));
             for (SQLBallot ballot : election.ballots) {
                 SQLChoice choice = election.findChoice(ballot.getChoiceId());
                 if (choice == null) throw new IllegalStateException("Invalid choice: " + ballot);
@@ -325,22 +369,22 @@ public final class ElectionAdminCommand implements TabExecutor {
                 if (userName == null) userName = "?";
                 sender.sendMessage(Component.empty()
                                    .append(Component.text("  "))
-                                   .append(Component.text(userName)).color(NamedTextColor.AQUA)
+                                   .append(Component.text(userName)).color(AQUA)
                                    .append(Component.text(" "))
-                                   .append(Component.text(choice.getName()).color(NamedTextColor.YELLOW)));
+                                   .append(Component.text(choice.getName()).color(YELLOW)));
             }
         }
         if (election.votes != null) {
-            sender.sendMessage(Component.text(election.votes.size() + " votes").color(NamedTextColor.AQUA));
+            sender.sendMessage(Component.text(election.votes.size() + " votes").color(AQUA));
             for (SQLVote vote : election.votes) {
                 SQLChoice choice = election.findChoice(vote.getChoiceId());
                 if (choice == null) throw new IllegalStateException("Invalid choice: " + vote);
                 Component value;
                 switch (vote.getValue()) {
-                case 1: value = Component.text("+").color(NamedTextColor.GREEN); break;
-                case -1: value = Component.text("-").color(NamedTextColor.RED); break;
-                case 0: value = Component.text("o").color(NamedTextColor.GRAY); break;
-                default: value = Component.text(vote.getValue()).color(NamedTextColor.DARK_RED); break;
+                case 1: value = Component.text("+").color(GREEN); break;
+                case -1: value = Component.text("-").color(RED); break;
+                case 0: value = Component.text("o").color(GRAY); break;
+                default: value = Component.text(vote.getValue()).color(DARK_RED); break;
                 }
                 String userName = vote.getUserName();
                 if (userName == null) userName = "?";
@@ -348,9 +392,9 @@ public final class ElectionAdminCommand implements TabExecutor {
                                    .append(Component.text("  "))
                                    .append(value)
                                    .append(Component.text(" "))
-                                   .append(Component.text(userName).color(NamedTextColor.AQUA))
+                                   .append(Component.text(userName).color(AQUA))
                                    .append(Component.text(" "))
-                                   .append(Component.text(choice.getName()).color(NamedTextColor.AQUA)));
+                                   .append(Component.text(choice.getName()).color(AQUA)));
             }
         }
         return true;

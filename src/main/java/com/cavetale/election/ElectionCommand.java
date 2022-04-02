@@ -46,6 +46,7 @@ public final class ElectionCommand implements TabExecutor {
         Player player = (Player) sender;
         if (args.length == 0) {
             plugin.database.find(SQLElection.class).findListAsync(list -> {
+                    list.removeIf(row -> !row.isEnabled());
                     list.removeIf(row -> row.getPermission() != null
                                   && !row.getPermission().isEmpty()
                                   && !player.hasPermission(row.getPermission()));
@@ -85,6 +86,7 @@ public final class ElectionCommand implements TabExecutor {
     }
 
     private void onCommand(Player player, Election election, String[] args) {
+        if (!election.election.isEnabled()) return;
         String permission = election.election.getPermission();
         if (permission != null && !permission.isEmpty()) {
             if (!player.hasPermission(permission)) return;

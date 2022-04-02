@@ -22,6 +22,10 @@ public final class SQLElection {
     private String permission;
     @Column(nullable = true, length = 1024)
     private String displayName;
+    @Column(nullable = false)
+    private boolean enabled;
+    @Column(nullable = false)
+    private boolean showVotes;
 
     public SQLElection() { }
 

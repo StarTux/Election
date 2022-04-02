@@ -21,6 +21,7 @@ public final class Election {
     protected List<SQLChoice> choices;
     protected List<SQLBallot> ballots;
     protected List<SQLVote> votes;
+    private Map<String, Integer> results;
 
     public boolean load(String name) {
         election = ElectionPlugin.instance.database.find(SQLElection.class)
@@ -103,7 +104,7 @@ public final class Election {
         return null;
     }
 
-    public Map<String, Integer> getResults() {
+    private Map<String, Integer> computeResults() {
         Map<String, Integer> result = new HashMap<>();
         switch (election.getType()) {
         case PICK_ONE:
@@ -123,5 +124,10 @@ public final class Election {
         default:
             return result;
         }
+    }
+
+    public Map<String, Integer> getResults() {
+        if (results == null) results = computeResults();
+        return results;
     }
 }
