@@ -1,5 +1,6 @@
 package com.cavetale.election.sql;
 
+import com.winthier.sql.SQLRow;
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
@@ -11,7 +12,7 @@ import lombok.Data;
        uniqueConstraints = {
            @UniqueConstraint(columnNames = {"election_id", "name"})
        })
-public final class SQLChoice implements Comparable<SQLChoice> {
+public final class SQLChoice implements SQLRow, Comparable<SQLChoice> {
     @Id
     private Integer id;
     @Column(nullable = false)

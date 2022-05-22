@@ -1,5 +1,6 @@
 package com.cavetale.election.sql;
 
+import com.winthier.sql.SQLRow;
 import java.util.UUID;
 import javax.persistence.Column;
 import javax.persistence.Id;
@@ -15,7 +16,7 @@ import lombok.Data;
        uniqueConstraints = {
            @UniqueConstraint(columnNames = {"user", "election_id", "choice_id"})
        })
-public final class SQLVote {
+public final class SQLVote implements SQLRow {
     @Id
     private Integer id;
     @Column(nullable = false)

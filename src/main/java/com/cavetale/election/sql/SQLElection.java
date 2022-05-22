@@ -1,6 +1,7 @@
 package com.cavetale.election.sql;
 
 import com.cavetale.election.ElectionType;
+import com.winthier.sql.SQLRow;
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
@@ -9,7 +10,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 
 @Data @Table(name = "elections")
-public final class SQLElection {
+public final class SQLElection implements SQLRow {
     @Id
     private Integer id;
     @Column(nullable = false, length = 255, unique = true)
