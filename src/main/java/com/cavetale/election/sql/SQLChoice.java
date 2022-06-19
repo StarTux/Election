@@ -1,32 +1,21 @@
 package com.cavetale.election.sql;
 
+import com.winthier.sql.SQLRow.Name;
+import com.winthier.sql.SQLRow.NotNull;
+import com.winthier.sql.SQLRow.UniqueKey;
 import com.winthier.sql.SQLRow;
-import javax.persistence.Column;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
 import lombok.Data;
 
-@Data
-@Table(name = "choices",
-       uniqueConstraints = {
-           @UniqueConstraint(columnNames = {"election_id", "name"})
-       })
+@Data @NotNull @Name("choices")
+@UniqueKey({"election_id", "name"})
 public final class SQLChoice implements SQLRow, Comparable<SQLChoice> {
-    @Id
-    private Integer id;
-    @Column(nullable = false)
+    @Id private Integer id;
     private int electionId;
-    @Column(nullable = false, length = 255)
-    private String name;
-    @Column(nullable = true)
+    @Nullable @VarChar(40) private String name;
     private int priority;
-    @Column(nullable = true, length = 255)
-    private String description;
-    @Column(nullable = true, length = 255)
-    private String url;
-    @Column(nullable = true, length = 255)
-    private String warpJson;
+    @Nullable @VarChar(255) private String description;
+    @Nullable @VarChar(255) private String url;
+    @Nullable @VarChar(255) private String warpJson;
 
     public SQLChoice() { }
 

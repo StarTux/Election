@@ -1,6 +1,7 @@
 package com.cavetale.election.struct;
 
-import lombok.Value;
+import com.cavetale.core.connect.Connect;
+import lombok.Data;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -8,8 +9,9 @@ import org.bukkit.World;
 /**
  * Serializable Location.
  */
-@Value
+@Data
 public final class Position {
+    private String server = "cavetale";
     public final String world;
     public final double x;
     public final double y;
@@ -18,6 +20,7 @@ public final class Position {
     public final float yaw;
 
     public Position(final Location location) {
+        this.server = Connect.get().getServerName();
         this.world = location.getWorld().getName();
         this.x = location.getX();
         this.y = location.getY();
@@ -32,5 +35,16 @@ public final class Position {
             throw new IllegalStateException("World not found: " + world);
         }
         return new Location(w, x, y, z, yaw, pitch);
+    }
+
+    public boolean isOnThisServer() {
+        if (server == null) server = "cavetale";
+        return Connect.get().getServerName().equals(server);
+    }
+
+    public String getServer() {
+        return server != null
+            ? server
+            : "cavetale";
     }
 }

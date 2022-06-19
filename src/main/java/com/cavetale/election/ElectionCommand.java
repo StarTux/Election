@@ -1,5 +1,7 @@
 package com.cavetale.election;
 
+import com.cavetale.core.command.RemotePlayer;
+import com.cavetale.core.connect.Connect;
 import com.cavetale.election.sql.SQLBallot;
 import com.cavetale.election.sql.SQLChoice;
 import com.cavetale.election.sql.SQLElection;
@@ -21,7 +23,6 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
-import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import static net.kyori.adventure.text.Component.join;
 import static net.kyori.adventure.text.Component.newline;
 import static net.kyori.adventure.text.Component.text;
@@ -39,11 +40,15 @@ public final class ElectionCommand implements TabExecutor {
 
     @Override
     public boolean onCommand(final CommandSender sender, final Command command, final String alias, final String[] args) {
-        if (!(sender instanceof Player)) {
+        final RemotePlayer player;
+        if (sender instanceof Player p) {
+            player = RemotePlayer.wrap(p);
+        } else if (sender instanceof RemotePlayer p) {
+            player = p;
+        } else {
             sender.sendMessage("[election:elect] Player expected!");
             return true;
         }
-        Player player = (Player) sender;
         if (args.length == 0) {
             plugin.database.find(SQLElection.class).findListAsync(list -> {
                     list.removeIf(row -> !row.isEnabled());
@@ -63,7 +68,7 @@ public final class ElectionCommand implements TabExecutor {
                                   .clickEvent(ClickEvent.runCommand(cmd))
                                   .hoverEvent(HoverEvent.showText(displayName)));
                     }
-                    Books.open(player, List.of(join(separator(newline()), lines)));
+                    Books.open(player.getPlayer(), List.of(join(separator(newline()), lines)));
                 });
             return true;
         }
@@ -76,7 +81,7 @@ public final class ElectionCommand implements TabExecutor {
         return true;
     }
 
-    void openBook(Player player, String name) {
+    private void openBook(Player player, String name) {
         plugin.database.scheduleAsyncTask(() -> {
                 Election election = new Election();
                 if (!election.load(name)) return;
@@ -85,14 +90,14 @@ public final class ElectionCommand implements TabExecutor {
             });
     }
 
-    private void onCommand(Player player, Election election, String[] args) {
+    private void onCommand(RemotePlayer player, Election election, String[] args) {
         if (!election.election.isEnabled()) return;
         String permission = election.election.getPermission();
         if (permission != null && !permission.isEmpty()) {
             if (!player.hasPermission(permission)) return;
         }
         if (args.length == 0) {
-            player.openBook(Books.makeBook(election, player));
+            player.getPlayer().openBook(Books.makeBook(election, player.getPlayer()));
             return;
         }
         switch (args[0]) {
@@ -106,10 +111,10 @@ public final class ElectionCommand implements TabExecutor {
                 if (ballot.getChoiceId() == choice.getId()) return;
                 ballot.setChoiceId(choice.getId());
                 ballot.setUserName(player.getName());
-                plugin.database.updateAsync(ballot, count -> voteCallback(player, count, election), "choice_id", "user_name");
+                plugin.database.updateAsync(ballot, count -> voteCallback(player.getPlayer(), count, election), "choice_id", "user_name");
             } else {
                 ballot = new SQLBallot(player.getUniqueId(), player.getName(), election.election, choice);
-                plugin.database.insertIgnoreAsync(ballot, count -> voteCallback(player, count, election));
+                plugin.database.insertIgnoreAsync(ballot, count -> voteCallback(player.getPlayer(), count, election));
             }
             break;
         }
@@ -131,10 +136,10 @@ public final class ElectionCommand implements TabExecutor {
                 if (vote.getValue() == newValue) return;
                 vote.setValue(newValue);
                 vote.setUserName(player.getName());
-                plugin.database.updateAsync(vote, count -> voteCallback(player, count, election), "value", "user_name");
+                plugin.database.updateAsync(vote, count -> voteCallback(player.getPlayer(), count, election), "value", "user_name");
             } else {
                 vote = new SQLVote(player.getUniqueId(), player.getName(), election.election, choice, newValue);
-                plugin.database.insertIgnoreAsync(vote, count -> voteCallback(player, count, election));
+                plugin.database.insertIgnoreAsync(vote, count -> voteCallback(player.getPlayer(), count, election));
             }
             break;
         }
@@ -145,8 +150,16 @@ public final class ElectionCommand implements TabExecutor {
             if (choice.getWarpJson() == null) return;
             Position position = Json.deserialize(choice.getWarpJson(), Position.class);
             if (position == null) return;
-            player.teleport(position.toLocation(), TeleportCause.PLUGIN);
-            player.sendMessage(text("Warping to site").color(GREEN));
+            if (!position.isOnThisServer() && player.isPlayer()) {
+                Connect.get().dispatchRemoteCommand(player.getPlayer(),
+                                                    "elect " + election.election.getName() + " warp " + choice.getName(),
+                                                    position.getServer());
+            } else {
+                player.bring(plugin, position.toLocation(), player2 -> {
+                        if (player2 == null) return;
+                        player2.sendMessage(text("Warping to site", GREEN));
+                    });
+            }
             break;
         }
         default: break;
