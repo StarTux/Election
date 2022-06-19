@@ -220,7 +220,7 @@ public final class ElectionAdminCommand implements TabExecutor {
         }
         Election election = Election.forCommand(args[0]);
         election.election.setEnabled(value);
-        if (0 == plugin.database.update(election.election, "displayName")) {
+        if (0 == plugin.database.update(election.election, "enabled")) {
             throw new CommandWarn("Could not update election!");
         }
         sender.sendMessage(Component.text("Enabled: " + value, value ? AQUA : RED));
@@ -237,7 +237,7 @@ public final class ElectionAdminCommand implements TabExecutor {
         }
         Election election = Election.forCommand(args[0]);
         election.election.setShowVotes(value);
-        if (0 == plugin.database.update(election.election, "displayName")) {
+        if (0 == plugin.database.update(election.election, "showVotes")) {
             throw new CommandWarn("Could not update election!");
         }
         sender.sendMessage(Component.text("Show votes: " + value, value ? AQUA : RED));
@@ -307,7 +307,7 @@ public final class ElectionAdminCommand implements TabExecutor {
         SQLChoice choice = election.choiceForCommand(args[1]);
         Position position = new Position(player.getLocation());
         choice.setWarpJson(Json.serialize(position));
-        if (0 == plugin.database.update(choice, "warp_json")) {
+        if (0 == plugin.database.update(choice, "warpJson")) {
             throw new CommandWarn("Could not update election!");
         }
         player.sendMessage(Component.text("Warp updated: " + choice.getWarpJson()).color(AQUA));

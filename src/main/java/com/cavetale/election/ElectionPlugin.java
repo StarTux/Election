@@ -5,6 +5,7 @@ import com.cavetale.election.sql.SQLChoice;
 import com.cavetale.election.sql.SQLElection;
 import com.cavetale.election.sql.SQLVote;
 import com.winthier.sql.SQLDatabase;
+import java.util.List;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class ElectionPlugin extends JavaPlugin {
@@ -18,7 +19,10 @@ public final class ElectionPlugin extends JavaPlugin {
     public void onEnable() {
         instance = this;
         database = new SQLDatabase(this);
-        database.registerTables(SQLElection.class, SQLChoice.class, SQLBallot.class, SQLVote.class);
+        database.registerTables(List.of(SQLElection.class,
+                                        SQLChoice.class,
+                                        SQLBallot.class,
+                                        SQLVote.class));
         if (!database.createAllTables()) {
             throw new IllegalStateException("Database setup failed!");
         }
