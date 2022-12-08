@@ -86,7 +86,10 @@ public final class ElectionCommand implements TabExecutor {
                 Election election = new Election();
                 if (!election.load(name)) return;
                 if (!election.fill()) return;
-                Bukkit.getScheduler().runTask(plugin, () -> player.openBook(Books.makeBook(election, player)));
+                Bukkit.getScheduler().runTask(plugin, () -> {
+                        player.closeInventory();
+                        player.openBook(Books.makeBook(election, player));
+                    });
             });
     }
 
@@ -97,6 +100,7 @@ public final class ElectionCommand implements TabExecutor {
             if (!player.hasPermission(permission)) return;
         }
         if (args.length == 0) {
+            player.getPlayer().closeInventory();
             player.getPlayer().openBook(Books.makeBook(election, player.getPlayer()));
             return;
         }
