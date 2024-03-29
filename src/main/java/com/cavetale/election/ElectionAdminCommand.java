@@ -84,6 +84,10 @@ public final class ElectionAdminCommand implements TabExecutor {
                         CommandArgCompleter.supplyList(this::listChoiceNames),
                         CommandArgCompleter.EMPTY)
             .senderCaller(this::choiceSeturl);
+        choiceNode.addChild("displayname").arguments("<election> <choice> <displayname>")
+            .completers(CommandArgCompleter.supplyList(this::listNames),
+                        CommandArgCompleter.supplyList(this::listChoiceNames))
+            .playerCaller(this::choiceDisplayName);
         choiceNode.addChild("setwarp").arguments("<election> <choice>")
             .completers(CommandArgCompleter.supplyList(this::listNames),
                         CommandArgCompleter.supplyList(this::listChoiceNames))
@@ -297,6 +301,25 @@ public final class ElectionAdminCommand implements TabExecutor {
             throw new CommandWarn("Could not update election!");
         }
         sender.sendMessage(Component.text("URL updated: " + choice.getUrl()).color(AQUA));
+        return true;
+    }
+
+    private boolean choiceDisplayName(CommandSender sender, String[] args) {
+        if (args.length < 3) return false;
+        final Election election = Election.forCommand(args[0]);
+        election.fill();
+        final SQLChoice choice = election.choiceForCommand(args[1]);
+        final String json = String.join(" ", Arrays.copyOfRange(args, 2, args.length));
+        try {
+            choice.setDisplayNameComponent(GsonComponentSerializer.gson().deserialize(json));
+        } catch (Exception e) {
+            throw new CommandWarn("Invalid component: " + json);
+        }
+        if (0 == plugin.database.update(choice, "displayName")) {
+            throw new CommandWarn("Could not update election!");
+        }
+        sender.sendMessage(Component.text("Display name updated: ", AQUA)
+                           .append(choice.getDisplayNameComponent()));
         return true;
     }
 

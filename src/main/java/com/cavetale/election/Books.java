@@ -57,10 +57,10 @@ public final class Books {
             int votes = election.getResults().getOrDefault(choice.getName(), 0);
             String votesString = votes == 1 ? "1 vote" : votes + " votes";
             cb.append(join(separator(space()),
-                           text(choice.getName(), DARK_BLUE),
+                           choice.getDisplayNameComponent(),
                            text("(" + votesString + ")", BLUE, ITALIC)));
         } else {
-            cb.append(text(choice.getName(), DARK_BLUE));
+            cb.append(choice.getDisplayNameComponent());
         }
         if (choice.getDescription() != null) {
             cb.append(Component.newline());
@@ -82,7 +82,7 @@ public final class Books {
             cb.append(textOfChildren(text("["), VanillaItems.ENDER_PEARL, text("Click Here]"))
                       .color(BLUE)
                       .clickEvent(runCommand(cmd))
-                      .hoverEvent(showText(text("Warp to " + choice.getName()))));
+                      .hoverEvent(showText(textOfChildren(text("Warp to "), choice.getDisplayNameComponent()))));
         }
         cb.append(Component.newline());
         cb.append(Component.newline());
