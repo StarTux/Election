@@ -9,7 +9,7 @@ description: Election Plugin
 author: StarTux
 website: https://github.com/StarTux/Election
 
-depend: [Core, SQL]
+depend: [Core, Mytems, SQL]
 softdepend: []
 
 commands:

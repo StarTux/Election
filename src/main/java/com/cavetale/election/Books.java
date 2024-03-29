@@ -1,8 +1,10 @@
 package com.cavetale.election;
 
+import com.cavetale.core.font.VanillaItems;
 import com.cavetale.election.sql.SQLBallot;
 import com.cavetale.election.sql.SQLChoice;
 import com.cavetale.election.sql.SQLVote;
+import com.cavetale.mytems.Mytems;
 import java.util.ArrayList;
 import java.util.List;
 import net.kyori.adventure.text.Component;
@@ -14,6 +16,7 @@ import org.bukkit.inventory.meta.BookMeta;
 import static net.kyori.adventure.text.Component.join;
 import static net.kyori.adventure.text.Component.space;
 import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.Component.textOfChildren;
 import static net.kyori.adventure.text.JoinConfiguration.separator;
 import static net.kyori.adventure.text.event.ClickEvent.openUrl;
 import static net.kyori.adventure.text.event.ClickEvent.runCommand;
@@ -76,7 +79,8 @@ public final class Books {
             cb.append(Component.newline());
             cb.append(text("Warp: "));
             String cmd =  "/elect " + election.election.getName() + " warp " + choice.getName();
-            cb.append(text("[Click Here]", DARK_GREEN)
+            cb.append(textOfChildren(text("["), VanillaItems.ENDER_PEARL, text("Click Here]"))
+                      .color(BLUE)
                       .clickEvent(runCommand(cmd))
                       .hoverEvent(showText(text("Warp to " + choice.getName()))));
         }
@@ -99,30 +103,22 @@ public final class Books {
         case UP_DOWN_VOTE: {
             SQLVote vote = election.findVote(player.getUniqueId(), choice);
             int value = vote != null ? vote.getValue() : 0;
-            if (value == 1) {
-                String cmd = "/elect " + election.election.getName() + " none " + choice.getName();
-                cb.append(text("[Upvote]", GOLD, BOLD)
-                          .hoverEvent(showText(text("Changed your mind?", GRAY)))
-                          .clickEvent(runCommand(cmd)));
-            } else {
-                cb.color(DARK_GREEN);
-                String cmd =  "/elect " + election.election.getName() + " up " + choice.getName();
-                cb.append(text("[Upvote]", DARK_GREEN)
-                          .hoverEvent(showText(text("Click here to vote YES", GOLD)))
-                          .clickEvent(runCommand(cmd)));
-            }
-            cb.append(Component.space());
-            if (value == -1) {
-                String cmd =  "/elect " + election.election.getName() + " none " + choice.getName();
-                cb.append(text("[Downvote]", GOLD, BOLD)
-                          .hoverEvent(showText(text("Changed your mind?", GRAY)))
-                          .clickEvent(runCommand(cmd)));
-            } else {
-                String cmd =  "/elect " + election.election.getName() + " down " + choice.getName();
-                cb.append(text("[Downvote]", DARK_GREEN)
-                          .hoverEvent(showText(text("Click here to vote NO", RED)))
-                          .clickEvent(runCommand(cmd)));
-            }
+            String cmd;
+            Component tooltip;
+            cmd = "/elect " + election.election.getName() + " " + (value == 1 ? "none" : "up") + " " + choice.getName();
+            tooltip = value == 1 ? text("Changed your mind?", GRAY) : text("Upvote", GREEN);
+            cb.append(textOfChildren(text("["), Mytems.OK, text("Upvote]"))
+                      .color(DARK_GREEN).decoration(BOLD, value == 1)
+                      .hoverEvent(showText(tooltip))
+                      .clickEvent(runCommand(cmd)));
+            cb.append(Component.newline());
+            cb.append(Component.newline());
+            cmd =  "/elect " + election.election.getName() + " " + (value == -1 ? "none" : "down") + " " + choice.getName();
+            tooltip = value == -1 ? text("Changed your mind?", GRAY) : text("Downvote", RED);
+            cb.append(textOfChildren(text("["), Mytems.NO, text("Downvote]"))
+                      .color(RED).decoration(BOLD, value == -1)
+                      .hoverEvent(showText(tooltip))
+                      .clickEvent(runCommand(cmd)));
             break;
         }
         default:
