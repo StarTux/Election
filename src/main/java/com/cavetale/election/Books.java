@@ -107,7 +107,7 @@ public final class Books {
             Component tooltip;
             cmd = "/elect " + election.election.getName() + " " + (value == 1 ? "none" : "up") + " " + choice.getName();
             tooltip = value == 1 ? text("Changed your mind?", GRAY) : text("Upvote", GREEN);
-            cb.append(textOfChildren(text("["), Mytems.OK, text("Upvote]"))
+            cb.append(textOfChildren(text("["), Mytems.THUMBS_UP, text("Upvote]"))
                       .color(DARK_GREEN).decoration(BOLD, value == 1)
                       .hoverEvent(showText(tooltip))
                       .clickEvent(runCommand(cmd)));
@@ -115,7 +115,7 @@ public final class Books {
             cb.append(Component.newline());
             cmd =  "/elect " + election.election.getName() + " " + (value == -1 ? "none" : "down") + " " + choice.getName();
             tooltip = value == -1 ? text("Changed your mind?", GRAY) : text("Downvote", RED);
-            cb.append(textOfChildren(text("["), Mytems.NO, text("Downvote]"))
+            cb.append(textOfChildren(text("["), Mytems.THUMBS_DOWN, text("Downvote]"))
                       .color(RED).decoration(BOLD, value == -1)
                       .hoverEvent(showText(tooltip))
                       .clickEvent(runCommand(cmd)));
