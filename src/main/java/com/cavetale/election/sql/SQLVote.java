@@ -12,10 +12,12 @@ import lombok.Data;
  * For ElectionType.UP_DOWN_VOTE.
  */
 @Data
-@Table(name = "votes",
-       uniqueConstraints = {
-           @UniqueConstraint(columnNames = {"user", "election_id", "choice_id"})
-       })
+@Table(
+    name = "votes",
+    uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"user", "election_id", "choice_id"})
+    }
+)
 public final class SQLVote implements SQLRow {
     @Id
     private Integer id;

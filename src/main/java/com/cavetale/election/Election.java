@@ -5,17 +5,20 @@ import com.cavetale.election.sql.SQLBallot;
 import com.cavetale.election.sql.SQLChoice;
 import com.cavetale.election.sql.SQLElection;
 import com.cavetale.election.sql.SQLVote;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import lombok.Data;
 
 /**
  * An in-memory cache storing everything currently known about an
  * election from the database.
  * Not stored for long.
  */
+@Data
 public final class Election {
     protected SQLElection election;
     protected List<SQLChoice> choices;
@@ -29,6 +32,14 @@ public final class Election {
             .findUnique();
         if (election == null) return false;
         return true;
+    }
+
+    public Election initialize() {
+        election = new SQLElection("New Election", ElectionType.PICK_ONE);
+        choices = new ArrayList<>();
+        ballots = new ArrayList<>();
+        votes = new ArrayList<>();
+        return this;
     }
 
     public boolean fill() {

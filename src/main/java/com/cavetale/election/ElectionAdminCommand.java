@@ -3,6 +3,7 @@ package com.cavetale.election;
 import com.cavetale.core.command.CommandArgCompleter;
 import com.cavetale.core.command.CommandNode;
 import com.cavetale.core.command.CommandWarn;
+import com.cavetale.election.dialog.ElectionEditDialog;
 import com.cavetale.election.sql.SQLBallot;
 import com.cavetale.election.sql.SQLChoice;
 import com.cavetale.election.sql.SQLElection;
@@ -37,6 +38,9 @@ public final class ElectionAdminCommand implements TabExecutor {
             .completers(CommandArgCompleter.supplyList(this::listNames),
                         CommandArgCompleter.enumLowerList(ElectionType.class))
             .senderCaller(this::create);
+        rootNode.addChild("edit").arguments("<name>")
+            .completers(CommandArgCompleter.supplyList(this::listNames))
+            .playerCaller(this::edit);
         rootNode.addChild("info").arguments("<name>")
             .completers(CommandArgCompleter.supplyList(this::listNames))
             .senderCaller(this::info);
@@ -146,7 +150,11 @@ public final class ElectionAdminCommand implements TabExecutor {
         return true;
     }
 
-    boolean create(CommandSender sender, String[] args) {
+    private boolean create(CommandSender sender, String[] args) {
+        if (args.length == 0 && sender instanceof Player player) {
+            new ElectionEditDialog(plugin, player, new Election().initialize()).open();
+            return true;
+        }
         if (args.length != 2) return false;
         String name = args[0];
         ElectionType electionType;
@@ -160,6 +168,14 @@ public final class ElectionAdminCommand implements TabExecutor {
             throw new CommandWarn("Election already exists: " + name);
         }
         sender.sendMessage(Component.text("Election created: " + name).color(AQUA));
+        return true;
+    }
+
+    private boolean edit(Player player, String[] args) {
+        if (args.length != 1) return false;
+        Election election = Election.forCommand(args[0]);
+        election.fill();
+        new ElectionEditDialog(plugin, player, election).open();
         return true;
     }
 

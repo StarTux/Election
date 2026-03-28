@@ -12,10 +12,12 @@ import lombok.Data;
  * For ElectionType.PICK_ONE.
  */
 @Data
-@Table(name = "ballots",
-       uniqueConstraints = {
-           @UniqueConstraint(columnNames = {"user", "election_id"})
-       })
+@Table(
+    name = "ballots",
+    uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"user", "election_id"})
+    }
+)
 public final class SQLBallot implements SQLRow {
     @Id
     private Integer id;

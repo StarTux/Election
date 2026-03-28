@@ -1,15 +1,18 @@
 package com.cavetale.election.sql;
 
-import com.winthier.sql.SQLRow.Name;
-import com.winthier.sql.SQLRow.NotNull;
-import com.winthier.sql.SQLRow.UniqueKey;
+import com.cavetale.core.util.Json;
+import com.cavetale.election.struct.Position;
 import com.winthier.sql.SQLRow;
+import io.papermc.paper.dialog.DialogResponseView;
 import lombok.Data;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
+import org.bukkit.Location;
 
-@Data @NotNull @Name("choices")
-@UniqueKey({"election_id", "name"})
+@Data
+@SQLRow.NotNull
+@SQLRow.Name("choices")
+@SQLRow.UniqueKey({"election_id", "name"})
 public final class SQLChoice implements SQLRow, Comparable<SQLChoice> {
     @Id private Integer id;
     private int electionId;
@@ -47,5 +50,22 @@ public final class SQLChoice implements SQLRow, Comparable<SQLChoice> {
         this.displayName = component != null
             ? GsonComponentSerializer.gson().serialize(component)
             : null;
+    }
+
+    public Position getWarpPosition() {
+        if (warpJson == null) return null;
+        return Json.deserialize(warpJson, Position.class);
+    }
+
+    public void setWarpLocation(Location location) {
+        warpJson = Json.serialize(new Position(location));
+    }
+
+    public void load(DialogResponseView response) {
+        name = response.getText("name").replace(" ", "");
+        displayName = response.getText("displayName");
+        priority = response.getFloat("priority").intValue();
+        description = response.getText("description");
+        url = response.getText("url");
     }
 }

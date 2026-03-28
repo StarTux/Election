@@ -47,4 +47,16 @@ public final class Position {
             ? server
             : "cavetale";
     }
+
+    public int getBlockX() {
+        return (int) Math.round(x);
+    }
+
+    public int getBlockY() {
+        return (int) Math.round(y);
+    }
+
+    public int getBlockZ() {
+        return (int) Math.round(z);
+    }
 }

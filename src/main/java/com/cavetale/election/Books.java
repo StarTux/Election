@@ -66,13 +66,15 @@ public final class Books {
             cb.append(Component.newline());
             cb.append(text(choice.getDescription()));
         }
-        if (choice.getUrl() != null) {
+        if (choice.getUrl() != null && !choice.getUrl().isEmpty()) {
             cb.append(Component.newline());
             cb.append(Component.newline());
             cb.append(text("Link: "));
-            cb.append(text("Click here", DARK_BLUE, UNDERLINED)
-                      .clickEvent(openUrl(choice.getUrl()))
-                      .hoverEvent(showText(text(choice.getUrl(), BLUE))));
+            cb.append(
+                text("Click here", DARK_BLUE, UNDERLINED)
+                .clickEvent(openUrl(choice.getUrl()))
+                .hoverEvent(showText(text(choice.getUrl(), BLUE)))
+            );
         }
         if (choice.getWarpJson() != null) {
             cb.append(Component.newline());

@@ -2,30 +2,22 @@ package com.cavetale.election.sql;
 
 import com.cavetale.election.ElectionType;
 import com.winthier.sql.SQLRow;
-import javax.persistence.Column;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import io.papermc.paper.dialog.DialogResponseView;
 import lombok.Data;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 
-@Data @Table(name = "elections")
+@Data
+@SQLRow.NotNull
+@SQLRow.Name("elections")
 public final class SQLElection implements SQLRow {
-    @Id
-    private Integer id;
-    @Column(nullable = false, length = 255, unique = true)
-    private String name;
-    @Column(nullable = false, length = 255)
-    private ElectionType type;
-    @Column(nullable = true, length = 255)
-    private String description;
-    @Column(nullable = true, length = 255)
-    private String permission;
-    @Column(nullable = true, length = 1024)
-    private String displayName;
-    @Column(nullable = false)
+    @Id private Integer id;
+    @VarChar(255) @Unique private String name;
+    @VarChar(255) private ElectionType type;
+    @VarChar(255) @Nullable private String description;
+    @VarChar(255) @Nullable private String permission;
+    @VarChar(1024) @Nullable private String displayName;
     private boolean enabled;
-    @Column(nullable = false)
     private boolean showVotes;
 
     public SQLElection() { }
@@ -49,5 +41,15 @@ public final class SQLElection implements SQLRow {
         this.displayName = component != null
             ? GsonComponentSerializer.gson().serialize(component)
             : null;
+    }
+
+    public void load(DialogResponseView response) {
+        name = response.getText("name").replace(" ", "");
+        type = ElectionType.valueOf(response.getText("type"));
+        description = response.getText("description");
+        permission = response.getText("permission");
+        displayName = response.getText("displayName");
+        enabled = response.getBoolean("enabled");
+        showVotes = response.getBoolean("showVotes");
     }
 }

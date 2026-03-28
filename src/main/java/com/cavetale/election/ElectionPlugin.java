@@ -6,8 +6,10 @@ import com.cavetale.election.sql.SQLElection;
 import com.cavetale.election.sql.SQLVote;
 import com.winthier.sql.SQLDatabase;
 import java.util.List;
+import lombok.Getter;
 import org.bukkit.plugin.java.JavaPlugin;
 
+@Getter
 public final class ElectionPlugin extends JavaPlugin {
     protected static ElectionPlugin instance;
     private ElectionCommand electionCommand = new ElectionCommand(this);
