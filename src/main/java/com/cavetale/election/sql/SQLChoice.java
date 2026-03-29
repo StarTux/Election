@@ -68,4 +68,19 @@ public final class SQLChoice implements SQLRow, Comparable<SQLChoice> {
         description = response.getText("description");
         url = response.getText("url");
     }
+
+    public boolean hasDescription() {
+        return description != null
+            && !description.isEmpty();
+    }
+
+    public boolean hasUrl() {
+        return url != null
+            && !url.isEmpty();
+    }
+
+    public boolean hasWarp() {
+        return warpJson != null
+            && !warpJson.isEmpty();
+    }
 }

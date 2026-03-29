@@ -6,6 +6,7 @@ import io.papermc.paper.dialog.DialogResponseView;
 import lombok.Data;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
+import org.bukkit.entity.Player;
 
 @Data
 @SQLRow.NotNull
@@ -51,5 +52,16 @@ public final class SQLElection implements SQLRow {
         displayName = response.getText("displayName");
         enabled = response.getBoolean("enabled");
         showVotes = response.getBoolean("showVotes");
+    }
+
+    public boolean hasDescription() {
+        return description != null
+            && !description.isEmpty();
+    }
+
+    public boolean hasPermission(Player player) {
+        return permission == null
+            || permission.isEmpty()
+            || player.hasPermission(permission);
     }
 }

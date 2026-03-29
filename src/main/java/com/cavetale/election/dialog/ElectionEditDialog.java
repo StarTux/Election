@@ -93,7 +93,6 @@ public final class ElectionEditDialog {
                     DialogAction.customClick(
                         (res, aus) -> cancel(),
                         ClickCallback.Options.builder()
-                        .uses(1)
                         .build()
                     )
                 ).build()
@@ -187,7 +186,6 @@ public final class ElectionEditDialog {
                             open();
                         },
                         ClickCallback.Options.builder()
-                        .uses(1)
                         .build()
                     )
                 ).build(),
@@ -196,7 +194,6 @@ public final class ElectionEditDialog {
                     DialogAction.customClick(
                         (res, aus) -> open(),
                         ClickCallback.Options.builder()
-                        .uses(1)
                         .build()
                     )
                 ).build()
@@ -255,7 +252,7 @@ public final class ElectionEditDialog {
             .build()
         );
         inputList.add(
-            DialogInput.numberRange("priority", text("Priority"), -1000f, 1000f)
+            DialogInput.numberRange("priority", text("Priority"), -100f, 100f)
             .initial((float) choiceRow.getPriority())
             .step(1f)
             .build()
