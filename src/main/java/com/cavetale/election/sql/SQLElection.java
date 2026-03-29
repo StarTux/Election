@@ -5,8 +5,8 @@ import com.winthier.sql.SQLRow;
 import io.papermc.paper.dialog.DialogResponseView;
 import lombok.Data;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import org.bukkit.entity.Player;
+import static net.kyori.adventure.text.minimessage.MiniMessage.miniMessage;
 
 @Data
 @SQLRow.NotNull
@@ -28,20 +28,14 @@ public final class SQLElection implements SQLRow {
         this.type = type;
     }
 
-    public Component getDisplayNameComponent() {
-        if (displayName == null) return Component.text(name);
-        try {
-            return GsonComponentSerializer.gson().deserialize(displayName);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return Component.text(name);
-        }
+    public boolean hasDisplayName() {
+        return displayName != null
+            && !displayName.isEmpty();
     }
 
-    public void setDisplayNameComponent(Component component) {
-        this.displayName = component != null
-            ? GsonComponentSerializer.gson().serialize(component)
-            : null;
+    public Component getDisplayNameComponent() {
+        if (displayName == null) return Component.text(name);
+        return miniMessage().deserialize(displayName);
     }
 
     public void load(DialogResponseView response) {
@@ -57,6 +51,11 @@ public final class SQLElection implements SQLRow {
     public boolean hasDescription() {
         return description != null
             && !description.isEmpty();
+    }
+
+    public Component getDescriptionComponent() {
+        if (description == null) return Component.empty();
+        return miniMessage().deserialize(description);
     }
 
     public boolean hasPermission(Player player) {

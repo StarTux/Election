@@ -116,6 +116,26 @@ public final class ElectionEditDialog {
                 )
             );
         }
+        if (electionRow.hasDisplayName()) {
+            bodyList.add(
+                DialogBody.plainMessage(
+                    textOfChildren(
+                        text("Display Name: ", GRAY),
+                        electionRow.getDisplayNameComponent()
+                    )
+                )
+            );
+        }
+        if (electionRow.hasDescription()) {
+            bodyList.add(
+                DialogBody.plainMessage(
+                    textOfChildren(
+                        text("Description: ", GRAY),
+                        electionRow.getDescriptionComponent()
+                    )
+                )
+            );
+        }
         final List<DialogInput> inputList = new ArrayList<>();
         inputList.add(
             DialogInput.text("name", text("Name"))
@@ -219,6 +239,26 @@ public final class ElectionEditDialog {
                     textOfChildren(
                         text("Choice id #", GRAY),
                         text(choiceRow.getId(), YELLOW)
+                    )
+                )
+            );
+        }
+        if (choiceRow.hasDisplayName()) {
+            bodyList.add(
+                DialogBody.plainMessage(
+                    textOfChildren(
+                        text("Display Name: ", GRAY),
+                        choiceRow.getDisplayNameComponent()
+                    )
+                )
+            );
+        }
+        if (choiceRow.hasDescription()) {
+            bodyList.add(
+                DialogBody.plainMessage(
+                    textOfChildren(
+                        text("Description: ", GRAY),
+                        choiceRow.getDescriptionComponent()
                     )
                 )
             );

@@ -18,6 +18,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
+import static net.kyori.adventure.text.format.TextDecoration.*;
 
 @RequiredArgsConstructor
 public final class ElectionMenuDialog {
@@ -60,7 +61,7 @@ public final class ElectionMenuDialog {
             );
         }
         builder.base(
-            DialogBase.builder(text("Elections"))
+            DialogBase.builder(text("Election List", GREEN, BOLD))
             .build()
         );
         builder.type(

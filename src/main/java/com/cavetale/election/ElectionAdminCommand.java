@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
@@ -216,12 +215,8 @@ public final class ElectionAdminCommand implements TabExecutor {
     protected boolean displayName(CommandSender sender, String[] args) {
         if (args.length < 2) return false;
         Election election = Election.forCommand(args[0]);
-        String json = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
-        try {
-            election.election.setDisplayNameComponent(GsonComponentSerializer.gson().deserialize(json));
-        } catch (Exception e) {
-            throw new CommandWarn("Invalid component: " + json);
-        }
+        String text = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
+        election.election.setDisplayName(text);
         if (0 == plugin.database.update(election.election, "displayName")) {
             throw new CommandWarn("Could not update election!");
         }
@@ -325,12 +320,8 @@ public final class ElectionAdminCommand implements TabExecutor {
         final Election election = Election.forCommand(args[0]);
         election.fill();
         final SQLChoice choice = election.choiceForCommand(args[1]);
-        final String json = String.join(" ", Arrays.copyOfRange(args, 2, args.length));
-        try {
-            choice.setDisplayNameComponent(GsonComponentSerializer.gson().deserialize(json));
-        } catch (Exception e) {
-            throw new CommandWarn("Invalid component: " + json);
-        }
+        final String text = String.join(" ", Arrays.copyOfRange(args, 2, args.length));
+        choice.setDisplayName(text);
         if (0 == plugin.database.update(choice, "displayName")) {
             throw new CommandWarn("Could not update election!");
         }

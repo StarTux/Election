@@ -47,7 +47,7 @@ public final class ElectionVoteDialog {
     private void createDialogList(DialogRegistryEntry.Builder builder) {
         final List<DialogBody> bodyList = new ArrayList<>();
         if (election.getElection().hasDescription()) {
-            bodyList.add(DialogBody.plainMessage(text(election.getElection().getDescription())));
+            bodyList.add(DialogBody.plainMessage(election.getElection().getDescriptionComponent()));
         }
         final List<Dialog> dialogs = new ArrayList<>();
         for (SQLChoice choice : election.getChoices()) {
@@ -159,10 +159,10 @@ public final class ElectionVoteDialog {
             throw new IllegalStateException("type=" + election.getElection().getType());
         }
         if (election.getElection().hasDescription()) {
-            bodyList.add(DialogBody.plainMessage(text(election.getElection().getDescription())));
+            bodyList.add(DialogBody.plainMessage(election.getElection().getDescriptionComponent()));
         }
         if (choiceRow.hasDescription()) {
-            bodyList.add(DialogBody.plainMessage(text(choiceRow.getDescription())));
+            bodyList.add(DialogBody.plainMessage(choiceRow.getDescriptionComponent()));
         }
         builder.base(
             DialogBase.builder(textOfChildren(titlePrefix, space(), choiceRow.getDisplayNameComponent()))
