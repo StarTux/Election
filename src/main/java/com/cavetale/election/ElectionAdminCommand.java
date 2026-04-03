@@ -393,6 +393,7 @@ public final class ElectionAdminCommand implements TabExecutor {
         if (election.ballots != null) {
             sender.sendMessage(Component.text(election.ballots.size() + " ballots").color(AQUA));
             for (SQLBallot ballot : election.ballots) {
+                if (ballot.getChoiceId() == 0) continue;
                 SQLChoice choice = election.findChoice(ballot.getChoiceId());
                 if (choice == null) throw new IllegalStateException("Invalid choice: " + ballot);
                 String userName = ballot.getUserName();
