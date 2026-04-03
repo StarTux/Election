@@ -34,11 +34,15 @@ public final class ElectionMenuDialog {
 
     private void listLoaded(List<SQLElection> list) {
         electionList.addAll(list);
-        Bukkit.getScheduler().runTask(plugin, this::openDialog);
-    }
-
-    private void openDialog() {
         electionList.removeIf(el -> !el.hasPermission(player));
+        if (electionList.isEmpty()) {
+            player.sendMessage(text("No elections to show", RED));
+            return;
+        }
+        if (electionList.size() == 1) {
+            onClick(electionList.get(0));
+            return;
+        }
         player.showDialog(makeDialog(this::createDialog));
     }
 
