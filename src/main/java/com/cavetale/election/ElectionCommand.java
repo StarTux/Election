@@ -9,6 +9,7 @@ import com.cavetale.election.util.Json;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
@@ -27,8 +28,8 @@ public final class ElectionCommand implements TabExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String alias, String[] args) {
-        if (sender instanceof RemotePlayer player && args.length == 3 && args[0].equals("warp")) {
-            warp(player, args[1], args[2]);
+        if (args.length == 3 && args[0].equals("warp")) {
+            warp(sender, args[1], args[2]);
             return true;
         }
         if (!(sender instanceof Player player)) {
@@ -39,30 +40,38 @@ public final class ElectionCommand implements TabExecutor {
         return true;
     }
 
-    private void warp(RemotePlayer player, String electionName, String choiceName) {
+    private void warp(CommandSender sender, String electionName, String choiceName) {
         plugin.database.scheduleAsyncTask(() -> {
                 Election election = new Election();
                 if (!election.load(electionName)) return;
                 if (!election.fill()) return;
-                Bukkit.getScheduler().runTask(plugin, () -> warp2(player, election, choiceName));
+                Bukkit.getScheduler().runTask(plugin, () -> warp2(sender, election, choiceName));
             });
     }
 
-    private void warp2(RemotePlayer player, Election election, String choiceName) {
+    private void warp2(CommandSender sender, Election election, String choiceName) {
         SQLChoice choice = election.findChoice(choiceName);
         if (choice == null) return;
         if (choice.getWarpJson() == null) return;
         Position position = Json.deserialize(choice.getWarpJson(), Position.class);
         if (position == null) return;
-        if (!position.isOnThisServer() && player.isPlayer()) {
+        final Location location = position.toLocation();
+        if (location == null) {
+            plugin.getLogger().severe("Warp location not found: " + election.getElection().getName() + "/" + choice.getName() + ": " + position);
+            return;
+        }
+        if (!position.isOnThisServer() && sender instanceof Player player) {
             Connect.get().dispatchRemoteCommand(player.getPlayer(),
                                                 "elect " + election.election.getName() + " warp " + choice.getName(),
                                                 position.getServer());
-        } else {
-            player.bring(plugin, position.toLocation(), player2 -> {
-                    if (player2 == null) return;
-                    player2.sendMessage(text("Warping to site", GREEN));
+        } else if (sender instanceof RemotePlayer remote) {
+            remote.bring(plugin, location, player -> {
+                    if (player == null) return;
+                    player.sendMessage(text("Warping to site", GREEN));
                 });
+        } else if (sender instanceof Player player) {
+            player.teleport(location);
+            player.sendMessage(text("Warping to site", GREEN));
         }
     }
 
