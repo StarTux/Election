@@ -55,21 +55,29 @@ public final class ElectionCommand implements TabExecutor {
         if (choice.getWarpJson() == null) return;
         Position position = Json.deserialize(choice.getWarpJson(), Position.class);
         if (position == null) return;
-        final Location location = position.toLocation();
-        if (location == null) {
-            plugin.getLogger().severe("Warp location not found: " + election.getElection().getName() + "/" + choice.getName() + ": " + position);
-            return;
-        }
-        if (!position.isOnThisServer() && sender instanceof Player player) {
-            Connect.get().dispatchRemoteCommand(player.getPlayer(),
-                                                "elect " + election.election.getName() + " warp " + choice.getName(),
-                                                position.getServer());
-        } else if (sender instanceof RemotePlayer remote) {
+        final boolean onThisServer = position.isOnThisServer();
+        if (!onThisServer && sender instanceof Player player) {
+            Connect.get().dispatchRemoteCommand(
+                player.getPlayer(),
+                "elect warp " + election.election.getName() + " " + choice.getName(),
+                position.getServer()
+            );
+        } else if (onThisServer && sender instanceof RemotePlayer remote) {
+            final Location location = position.toLocation();
+            if (location == null) {
+                plugin.getLogger().severe("Warp location not found: " + election.getElection().getName() + "/" + choice.getName() + ": " + position);
+                return;
+            }
             remote.bring(plugin, location, player -> {
                     if (player == null) return;
                     player.sendMessage(text("Warping to site", GREEN));
                 });
-        } else if (sender instanceof Player player) {
+        } else if (onThisServer && sender instanceof Player player) {
+            final Location location = position.toLocation();
+            if (location == null) {
+                plugin.getLogger().severe("Warp location not found: " + election.getElection().getName() + "/" + choice.getName() + ": " + position);
+                return;
+            }
             player.teleport(location);
             player.sendMessage(text("Warping to site", GREEN));
         }
