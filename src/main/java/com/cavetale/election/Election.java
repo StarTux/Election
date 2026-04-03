@@ -120,6 +120,7 @@ public final class Election {
         switch (election.getType()) {
         case PICK_ONE:
             for (SQLBallot ballot : ballots) {
+                if (ballot.getChoiceId() == 0) continue;
                 SQLChoice choice = findChoice(ballot.getChoiceId());
                 if (choice == null) throw new IllegalStateException("Invalid choice: " + ballot);
                 result.compute(choice.getName(), (n, i) -> (i != null ? i : 0) + 1);
